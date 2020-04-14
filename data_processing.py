@@ -3,7 +3,7 @@ import networkx as nx
 import scipy.sparse as sp
 from scipy.io import loadmat
 from sklearn.metrics.pairwise import cosine_similarity
-#import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 from random import sample
 
 
@@ -18,9 +18,9 @@ def load_data(opt):
         links_file = loadmat(data_dir+'/CNN_TFIDF_Normalized.mat')
 
     elif dataset_str == 'fox':
-        features_file = loadmat('/FOX_ImageFeatureNormalizedMat.mat')
-        labels_file = loadmat('/FOX_LabelMat.mat')
-        links_file = loadmat('/FOX_TFIDF_Normalized.mat')
+        features_file = loadmat(data_dir+'/FOX_ImageFeatureNormalizedMat.mat')
+        labels_file = loadmat(data_dir+'/FOX_LabelMat.mat')
+        links_file = loadmat(data_dir+'/FOX_TFIDF_Normalized.mat')
 
     features_all = sp.lil_matrix(features_file['imageFeatureNormalizedMat'].transpose())
     labels_all = labels_file['labelMat'].toarray()
