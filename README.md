@@ -8,9 +8,9 @@ https://sites.google.com/site/qianmingjie/home/datasets/cnn-and-fox-news
 Example;
 ```
 opt = {
-    "data_dir" = '/Users/mob/Documents/Datasets/CNN',
-    "dataset_str" = 'cnn',
-    "similarity_threshold" = 0.1,
+    "data_dir" : '/Users/mob/Documents/Datasets/CNN',
+    "dataset_str" : 'cnn',
+    "similarity_threshold" : 0.1,
     }
 ```
 in `<data_processing.py>` 
