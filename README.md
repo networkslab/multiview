@@ -1,4 +1,4 @@
-graph data hunt project: CNN and FOX News data 
+# Graph dataset hunt project: Text-Image Web News
 
 # Data source
 Download at 
