@@ -8,12 +8,15 @@ https://sites.google.com/site/qianmingjie/home/datasets/cnn-and-fox-news
 Example;
 ```
 opt = {
-    "data_dir" : '/Users/mob/Documents/Datasets/CNN',
-    "dataset_str" : 'cnn',
-    "similarity_threshold" : 0.1,
-    }
+    'data_dir': '/Users/mob/Documents/Datasets/CNN',
+    'dataset_str': 'cnn',
+    'similarity_type': 'cosine',
+    'similarity_threshold': 0.1,
+    'image_on_edges': True,
+}
 ```
 in `<data_processing.py>` 
 * `graph_construction(opt)`: to construct graph and return giant component
 * `graph_visualization(opt)`: to construct graph and visualize giant component
 * `gcn_input(opt)`: to construct graph and prepeare input data for gcn (data split and formatting: returns standard inputs of gcn, returned variables are same in name compatible in fomat)
+* `data_repo(opt)`: to create pickle files in specified format

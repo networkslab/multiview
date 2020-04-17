@@ -2,10 +2,10 @@ import numpy as np
 import networkx as nx
 import scipy.sparse as sp
 from scipy.io import loadmat
-from sklearn.metrics.pairwise import cosine_similarity
-# import matplotlib.pyplot as plt
+from sklearn.metrics.pairwise import cosine_similarity, euclidean_distances
+import matplotlib.pyplot as plt
 from random import sample
-
+import pickle
 
 def load_data(opt):
     """Load raw data to be used features, labels and links."""
@@ -13,20 +13,27 @@ def load_data(opt):
     dataset_str = opt['dataset_str']
 
     if dataset_str == 'cnn':
-        features_file = loadmat(data_dir+'/CNN_ImageFeatureNormalizedMat.mat')
+        image_file = loadmat(data_dir+'/CNN_ImageFeatureNormalizedMat.mat')
+        text_file = loadmat(data_dir+'/CNN_TFIDF_Normalized.mat')
         labels_file = loadmat(data_dir+'/CNN_LabelMat.mat')
-        links_file = loadmat(data_dir+'/CNN_TFIDF_Normalized.mat')
 
     elif dataset_str == 'fox':
-        features_file = loadmat(data_dir+'/FOX_ImageFeatureNormalizedMat.mat')
+        image_file = loadmat(data_dir+'/FOX_ImageFeatureNormalizedMat.mat')
+        text_file = loadmat(data_dir+'/FOX_TFIDF_Normalized.mat')
         labels_file = loadmat(data_dir+'/FOX_LabelMat.mat')
-        links_file = loadmat(data_dir+'/FOX_TFIDF_Normalized.mat')
 
-    features_all = sp.lil_matrix(features_file['imageFeatureNormalizedMat'].transpose())
-    labels_all = labels_file['labelMat'].toarray()
-    links_all = links_file['TFIDF_Normalized'].transpose()
+    image_fs = sp.lil_matrix(image_file['imageFeatureNormalizedMat'].transpose())
+    text_fs = text_file['TFIDF_Normalized'].transpose()
+    labels = labels_file['labelMat'].toarray()
 
-    return features_all, labels_all, links_all
+    if opt['image_on_edges']:
+        features = text_fs
+        links = image_fs
+    else:
+        features = image_fs
+        links = text_fs
+
+    return features, labels, links
 
 
 def sample_mask(idx, l):
@@ -42,8 +49,14 @@ def graph_construction(opt):
     similarity_threshold = opt['similarity_threshold']
 
     # adjacency matrix
-    adj_all = cosine_similarity(links_all)
-    adj_all = 1 * (adj_all > similarity_threshold)
+    if opt['similarity_type'] == 'cosine':
+        adj_all = cosine_similarity(links_all)
+        adj_all = adj_all * (adj_all > similarity_threshold)
+    elif opt['similarity_type'] == 'euclidean':
+        adj_all = euclidean_distances(links_all)
+        adj_all = 1 - (adj_all - np.min(adj_all)) / (np.max(adj_all) - np.min(adj_all))
+        adj_all = adj_all * (adj_all > similarity_threshold)
+
     g_all = nx.from_numpy_matrix(adj_all, create_using=None)
 
     # giant component
@@ -103,3 +116,24 @@ def gcn_input(opt):
 
     return adj, features, y_train, y_val, y_test, train_mask, val_mask, test_mask
 
+
+def data_repo(opt):
+
+    features_cc, labels_cc, adj_cc, _ = graph_construction(opt)
+    if features_cc.getformat() == 'csr':
+        allx = features_cc
+    else:
+        allx = features_cc.tocsr()
+    if type(labels_cc) == np.ndarray:
+        ally = labels_cc
+    else:
+        ally = np.asarray(labels_cc)
+    if adj_cc.getformat() == 'csr':
+        A = adj_cc
+    else:
+        A = adj_cc.tocsr()
+
+    file_name = 'text_image_' + opt['dataset_str']
+    pickle.dump(allx, open(file_name+'.allx.pk', "wb"))
+    pickle.dump(ally, open(file_name+'.ally.pk', "wb"))
+    pickle.dump(A, open(file_name+'.A.pk', "wb"))
